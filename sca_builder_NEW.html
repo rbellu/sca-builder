@@ -1,0 +1,1988 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCA Builder COMPLETO - ASST Lecco</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #FAF6F0;
+            min-height: 100vh;
+            padding: 20px;
+            color: #1a1a1a;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #003899 0%, #004ACC 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+        
+        .badge {
+            position: absolute;
+            top: 25px;
+            right: 40px;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-size: 0.95em;
+            font-weight: 700;
+            background: #28a745;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Upload Section */
+        .upload-area {
+            border: 3px dashed #004ACC;
+            border-radius: 15px;
+            padding: 60px;
+            text-align: center;
+            background: white;
+            margin: 30px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            background: #FBF8F4;
+            border-color: #005DFF;
+            transform: translateY(-2px);
+        }
+        
+        .upload-area.dragover {
+            background: #F0FFF4;
+            border-color: #28a745;
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        .file-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+        
+        .file-item {
+            background: #FAF6F0;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 2px solid #E9EBEE;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+        
+        .file-type {
+            width: 40px;
+            height: 40px;
+            background: #003899;
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+        
+        .file-status {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .file-status.success {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-primary {
+            background: #003899;
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #004ACC;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 56, 153, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            padding: 8px 15px;
+            font-size: 0.9em;
+        }
+        
+        .btn-warning {
+            background: #FFC107;
+            color: #1a1a1a;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.85em;
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #E9EBEE;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        /* Progress */
+        .progress-container {
+            margin: 30px 0;
+        }
+        
+        .progress-bar {
+            background: #E9EBEE;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #003899 0%, #004ACC 100%);
+            transition: width 0.5s;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.95em;
+            color: #003899;
+            font-weight: 700;
+        }
+        
+        /* Main Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: #FAF6F0;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #E9EBEE;
+            max-height: 800px;
+            overflow-y: auto;
+        }
+        
+        .sidebar h3 {
+            color: #003899;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            position: sticky;
+            top: 0;
+            background: #FAF6F0;
+            padding: 10px 0;
+            z-index: 10;
+        }
+        
+        .section-list {
+            list-style: none;
+        }
+        
+        .section-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        .section-item:hover {
+            background: white;
+        }
+        
+        .section-item.completed {
+            background: #E8F5E9;
+            border-color: #28a745;
+        }
+        
+        .section-item.current {
+            background: #E3F2FD;
+            border-color: #004ACC;
+            font-weight: 600;
+        }
+        
+        .section-item .status-icon {
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
+        
+        /* Workspace */
+        .workspace {
+            background: white;
+        }
+        
+        .workspace-header {
+            border-bottom: 3px solid #003899;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .workspace-header h2 {
+            color: #003899;
+            font-size: 1.8em;
+        }
+        
+        .workspace-header .section-type {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 16px;
+            background: #E3F2FD;
+            color: #003899;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        /* Content Display */
+        .content-display {
+            background: #FAF6F0;
+            border: 2px solid #004ACC;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            min-height: 200px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+        
+        .content-display[contenteditable="true"] {
+            border-color: #FFC107;
+            background: #FFFEF5;
+        }
+        
+        /* Prompt Box */
+        .prompt-box {
+            background: #E3F2FD;
+            border: 2px solid #004ACC;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.88em;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .prompt-label {
+            font-weight: bold;
+            color: #003899;
+            margin-bottom: 10px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 1.05em;
+        }
+        
+        .copy-btn {
+            float: right;
+            padding: 6px 16px;
+            font-size: 0.9em;
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #003899;
+            margin-bottom: 8px;
+        }
+        
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E9EBEE;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+        
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: #004ACC;
+        }
+        
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .data-table th {
+            background: #003899;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #E9EBEE;
+        }
+        
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .data-table input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #E9EBEE;
+            border-radius: 4px;
+        }
+        
+        /* Info Boxes */
+        .info-box {
+            background: #E3F2FD;
+            border-left: 4px solid #004ACC;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .warning-box {
+            background: #FFF3CD;
+            border-left: 4px solid #FFC107;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .success-box {
+            background: #E8F5E9;
+            border-left: 4px solid #28a745;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .error-box {
+            background: #FFE7E7;
+            border-left: 4px solid #dc3545;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        /* Multi-step */
+        .step-indicator {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #FAF6F0;
+            border-radius: 8px;
+        }
+        
+        .step {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            background: white;
+            border: 2px solid #E9EBEE;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #6c757d;
+        }
+        
+        .step.active {
+            background: #E3F2FD;
+            border-color: #004ACC;
+            color: #003899;
+        }
+        
+        .step.completed {
+            background: #E8F5E9;
+            border-color: #28a745;
+            color: #28a745;
+        }
+        
+        /* Indicator Card */
+        .indicator-card {
+            background: white;
+            border: 2px solid #E9EBEE;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .indicator-card h4 {
+            color: #003899;
+            margin-bottom: 15px;
+        }
+        
+        /* RACI Matrix */
+        .raci-matrix {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        .raci-table {
+            min-width: 600px;
+        }
+        
+        .raci-cell {
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .raci-R { color: #dc3545; }
+        .raci-A { color: #003899; }
+        .raci-C { color: #FFC107; }
+        .raci-I { color: #28a745; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 SCA Builder COMPLETO</h1>
+            <div class="subtitle">Standard Clinico Assistenziale - ASST Lecco TIN</div>
+            <div class="badge">✅ 15 SEZIONI</div>
+        </div>
+        
+        <div class="content">
+            <!-- STEP 1: Upload Documents -->
+            <div class="section active" id="uploadSection">
+                <h2 style="color: #003899; margin-bottom: 20px;">📁 Step 1: Carica Documenti</h2>
+                <p style="color: #6c757d; margin-bottom: 30px;">
+                    Carica le linee guida e documenti di riferimento (PDF o Word, max 4 file)
+                </p>
+                
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📄</div>
+                    <h3>Trascina qui i file o clicca per selezionare</h3>
+                    <p style="color: #6c757d; margin-top: 10px;">
+                        Formati: PDF, DOCX | Max 4 file
+                    </p>
+                    <input type="file" id="fileInput" multiple accept=".pdf,.docx" style="display: none;">
+                </div>
+                
+                <ul class="file-list" id="fileList"></ul>
+                
+                <div class="info-box" id="uploadInfo" style="display: none;">
+                    <strong>✅ Documenti pronti!</strong><br>
+                    Testo estratto con successo. Puoi iniziare la generazione guidata dello SCA.
+                </div>
+                
+                <div class="button-group">
+                    <div></div>
+                    <button class="btn btn-primary" onclick="startSCA()" id="startBtn" disabled>
+                        🚀 Inizia Creazione SCA (15 Sezioni) →
+                    </button>
+                </div>
+            </div>
+            
+            <!-- STEP 2: Work on SCA -->
+            <div class="section" id="workSection">
+                <h2 style="color: #003899; margin-bottom: 20px;">✍️ Creazione Standard Clinico Assistenziale</h2>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">0 di 15 sezioni completate (0%)</div>
+                </div>
+                
+                <div class="main-layout">
+                    <div class="sidebar">
+                        <h3>📋 Sezioni SCA</h3>
+                        <ul class="section-list" id="sectionList"></ul>
+                    </div>
+                    
+                    <div class="workspace">
+                        <div class="workspace-header">
+                            <h2 id="sectionTitle">Sezione</h2>
+                            <span class="section-type" id="sectionType">Tipo</span>
+                        </div>
+                        
+                        <div id="workspaceContent"></div>
+                        
+                        <div class="button-group">
+                            <button class="btn btn-secondary" onclick="previousSection()" id="prevBtn">← Precedente</button>
+                            <button class="btn btn-primary" onclick="nextSection()" id="nextBtn">Avanti →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- STEP 3: Review -->
+            <div class="section" id="reviewSection">
+                <h2 style="color: #003899; margin-bottom: 20px;">📝 Revisione SCA Completo</h2>
+                
+                <div class="success-box">
+                    <strong>🎉 SCA Completato!</strong><br>
+                    Rivedi tutte le 15 sezioni prima dell'export finale. Puoi tornare indietro per modificare qualsiasi sezione.
+                </div>
+                
+                <div id="reviewContent"></div>
+                
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="backToWork()">← Torna alla Modifica</button>
+                    <button class="btn btn-success" onclick="exportSCA()">📥 Copia SCA Completo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Configure PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        // Global State
+        const state = {
+            uploadedFiles: [],
+            extractedTexts: {},
+            currentSectionIndex: 0,
+            scaData: {},
+            multiStepData: {}, // For sections with multiple steps
+            
+            sections: [
+                {
+                    id: 'obiettivo',
+                    name: '1. OBIETTIVO',
+                    type: 'prompt',
+                    icon: '🎯',
+                    instruction: `Sei un esperto nella creazione di Standard Clinici Assistenziali (SCA) per ASST Lecco.
+
+SEZIONE: 1. OBIETTIVO
+
+COMPITO:
+Scrivi la sezione OBIETTIVO dello SCA includendo:
+
+1. OBIETTIVO GENERALE:
+   - Presa in carico clinico-assistenziale dei pazienti
+   - Coerente con linee guida basate su evidenze
+   - Specifica la patologia/problema clinico
+
+2. OBIETTIVI SPECIFICI (3-5 obiettivi):
+   - Diagnostico: standardizzare valutazione, criteri diagnosi
+   - Terapeutico: protocolli evidence-based, criteri prescrizione
+   - Educazionale: informazione pazienti/familiari, prevenzione
+   - Follow-up: criteri dimissione, continuità assistenziale
+   - Qualità: riduzione variabilità, miglioramento outcomes
+
+REGOLE:
+- Scrivi in italiano professionale
+- Basa il contenuto sulle evidenze dei documenti forniti
+- Usa terminologia clinica appropriata
+- Formatta il testo in modo chiaro con paragrafi
+- NON scrivere titoli di sezione
+- NON usare markdown`,
+                    completed: false
+                },
+                {
+                    id: 'storico',
+                    name: '2. STORICO REVISIONI',
+                    type: 'manual',
+                    icon: '📅',
+                    completed: false
+                },
+                {
+                    id: 'acronimi',
+                    name: '3. ACRONIMI E DEFINIZIONI',
+                    type: 'prompt',
+                    icon: '📖',
+                    instruction: `Sei un esperto nella creazione di Standard Clinici Assistenziali (SCA) per ASST Lecco.
+
+SEZIONE: 3. ACRONIMI E DEFINIZIONI
+
+COMPITO:
+Analizza i documenti forniti ed estrai:
+
+1. ACRONIMI:
+   - Tutti gli acronimi citati nei documenti
+   - Formato: ACRONIMO - Definizione completa
+   - Ordine alfabetico
+
+2. DEFINIZIONI:
+   - Termini tecnici o clinici non comuni
+   - Definizioni reperite dalla letteratura
+   - Concetti che richiedono chiarimento
+
+FORMATO OUTPUT:
+**ACRONIMI:**
+- SCA - Standard Clinico Assistenziale
+- ... (ordine alfabetico)
+
+**DEFINIZIONI:**
+- Termine: definizione dettagliata
+- ...
+
+REGOLE:
+- Estrai TUTTI gli acronimi presenti
+- Includi solo definizioni rilevanti e non ovvie
+- Scrivi definizioni chiare e concise
+- NON usare markdown per titoli`,
+                    completed: false
+                },
+                {
+                    id: 'documentazione',
+                    name: '4. DOCUMENTAZIONE COLLEGATA',
+                    type: 'manual',
+                    icon: '📎',
+                    completed: false
+                },
+                {
+                    id: 'responsabilita',
+                    name: '5. RESPONSABILITÀ AGGIORNAMENTO',
+                    type: 'template',
+                    icon: '👤',
+                    completed: false
+                },
+                {
+                    id: 'fonti',
+                    name: '6. ANALISI FONTI + AGREE',
+                    type: 'manual',
+                    icon: '📊',
+                    completed: false
+                },
+                {
+                    id: 'introduzione',
+                    name: '7. INTRODUZIONE',
+                    type: 'prompt',
+                    icon: '📝',
+                    instruction: `Sei un esperto nella creazione di Standard Clinici Assistenziali (SCA) per ASST Lecco.
+
+SEZIONE: 7. INTRODUZIONE
+
+COMPITO:
+Scrivi una introduzione completa che includa:
+
+1. DESCRIZIONE DELLA PATOLOGIA:
+   - Definizione clinica
+   - Caratteristiche principali
+   - Classificazione se rilevante
+
+2. POPOLAZIONE DI RIFERIMENTO:
+   - Criteri di età
+   - Caratteristiche specifiche
+   - Setting assistenziale (degenza, ambulatorio, etc.)
+
+3. EPIDEMIOLOGIA:
+   - Prevalenza/incidenza
+   - Dati nazionali e internazionali
+   - Trend temporali se rilevanti
+
+4. STORIA NATURALE E PROGNOSI:
+   - Evoluzione tipica
+   - Fattori prognostici
+   - Complicanze potenziali
+   - Outcome attesi
+
+REGOLE:
+- Basa il contenuto sui documenti forniti
+- Usa dati epidemiologici concreti quando disponibili
+- Scrivi in modo chiaro e professionale
+- Organizza in paragrafi ben strutturati
+- NON usare titoli markdown`,
+                    completed: false
+                },
+                {
+                    id: 'contesto',
+                    name: '7.1 ANALISI CONTESTO',
+                    type: 'manual',
+                    icon: '🔍',
+                    completed: false
+                },
+                {
+                    id: 'percorso_attuale',
+                    name: '7.1.1 PERCORSO ATTUALE (AS-IS)',
+                    type: 'manual',
+                    icon: '🗺️',
+                    completed: false
+                },
+                {
+                    id: 'swot',
+                    name: '7.1.2 SWOT ANALYSIS',
+                    type: 'prompt',
+                    icon: '⚖️',
+                    instruction: `Sei un esperto nella creazione di Standard Clinici Assistenziali (SCA) per ASST Lecco.
+
+SEZIONE: 7.1.2 SWOT ANALYSIS
+
+COMPITO:
+Crea una SWOT Analysis completa per la gestione della patologia/problema clinico presso ASST Lecco.
+
+Struttura in 4 quadranti:
+
+**PUNTI DI FORZA (Strengths - Origine interna)**
+- Risorse disponibili (competenze, strutture, tecnologie)
+- Organizzazione esistente
+- Esperienze positive pregresse
+- Standard già implementati
+
+**PUNTI DI DEBOLEZZA (Weaknesses - Origine interna)**
+- Lacune organizzative
+- Carenze di risorse
+- Variabilità nella pratica clinica
+- Criticità identificate
+
+**OPPORTUNITÀ (Opportunities - Origine esterna)**
+- Nuove evidenze scientifiche
+- Linee guida aggiornate
+- Collaborazioni possibili
+- Innovazioni tecnologiche
+
+**MINACCE (Threats - Origine esterna)**
+- Vincoli normativi
+- Limitazioni di budget
+- Resistenze al cambiamento
+- Fattori ambientali/sociali
+
+FORMATO OUTPUT:
+Presenta in formato tabella 2x2 o elenco strutturato.
+Per ogni quadrante: 3-5 punti concreti e specifici.
+
+REGOLE:
+- Contestualizza su ASST Lecco quando possibile
+- Sii realistico e concreto
+- Usa i documenti come base per opportunità (nuove evidenze)
+- Scrivi in modo professionale`,
+                    completed: false
+                },
+                {
+                    id: 'criteri',
+                    name: '8. CRITERI INGRESSO/USCITA',
+                    type: 'prompt',
+                    icon: '🚪',
+                    instruction: `Sei un esperto nella creazione di Standard Clinici Assistenziali (SCA) per ASST Lecco.
+
+SEZIONE: 8. CRITERI DI INGRESSO E USCITA DAL PERCORSO
+
+COMPITO:
+Definisci criteri chiari e dettagliati.
+
+**CRITERI DI INGRESSO:**
+
+1. Criteri clinici di inclusione:
+   - Sintomatologia specifica
+   - Diagnosi/sospetto diagnostico
+   - Età e caratteristiche paziente
+   - Setting di presentazione
+
+2. Criteri di esclusione (Red flags):
+   - Segni di allarme
+   - Cause organiche da escludere
+   - Condizioni che richiedono altro percorso
+   - Emergenze che necessitano altro iter
+
+**CRITERI DI USCITA:**
+
+1. Risoluzione/stabilizzazione:
+   - Criteri clinici di miglioramento
+   - Obiettivi terapeutici raggiunti
+   - Stabilità condizioni
+
+2. Criteri di dimissione:
+   - Capacità gestione domiciliare
+   - Educazione famiglia completata
+   - Follow-up programmato
+
+3. Criteri di invio ad altro percorso:
+   - Necessità specialistica diversa
+   - Complicanze
+   - Non risposta al trattamento
+
+REGOLE:
+- Sii specifico e misurabile quando possibile
+- Basa su linee guida fornite
+- Usa terminologia clinica precisa
+- Organizza in punti chiari
+- NON usare markdown per titoli`,
+                    completed: false
+                },
+                {
+                    id: 'percorso_paziente',
+                    name: '9.1 PERCORSO DEL PAZIENTE',
+                    type: 'guided',
+                    icon: '🏥',
+                    completed: false
+                },
+                {
+                    id: 'indicatori',
+                    name: '9.2 INDICATORI MONITORAGGIO',
+                    type: 'structured',
+                    icon: '📈',
+                    completed: false
+                },
+                {
+                    id: 'raci',
+                    name: '10. MATRICE RACI',
+                    type: 'structured',
+                    icon: '👥',
+                    completed: false
+                },
+                {
+                    id: 'flowchart',
+                    name: '11. FLOWCHART',
+                    type: 'info',
+                    icon: '📊',
+                    completed: false
+                }
+            ]
+        };
+        
+        // Init
+        window.addEventListener('load', init);
+        
+        function init() {
+            setupUploadHandlers();
+        }
+        
+        // Upload Handlers (same as MVP)
+        function setupUploadHandlers() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            
+            uploadArea.addEventListener('click', () => fileInput.click());
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+        }
+        
+        async function handleFiles(files) {
+            for (const file of Array.from(files)) {
+                if (state.uploadedFiles.length >= 4) {
+                    alert('Massimo 4 documenti');
+                    break;
+                }
+                
+                state.uploadedFiles.push(file);
+                addFileToList(file);
+                await extractText(file);
+            }
+            
+            updateStartButton();
+        }
+        
+        function addFileToList(file) {
+            const li = document.createElement('li');
+            li.className = 'file-item';
+            li.id = `file-${file.name}`;
+            
+            const ext = file.name.split('.').pop().toUpperCase();
+            
+            li.innerHTML = `
+                <div class="file-info">
+                    <div class="file-type">${ext}</div>
+                    <div style="flex: 1;">
+                        <strong>${file.name}</strong><br>
+                        <small style="color: #6c757d;">${(file.size / 1024).toFixed(1)} KB</small>
+                        <div class="file-status" id="status-${file.name}">⏳ Estrazione...</div>
+                    </div>
+                </div>
+                <button class="btn btn-danger" onclick="removeFile('${file.name}')">✕</button>
+            `;
+            
+            document.getElementById('fileList').appendChild(li);
+        }
+        
+        async function extractText(file) {
+            const statusEl = document.getElementById(`status-${file.name}`);
+            const ext = file.name.split('.').pop().toLowerCase();
+            
+            try {
+                let text = '';
+                
+                if (ext === 'pdf') {
+                    text = await extractPdfText(file);
+                } else if (ext === 'docx') {
+                    text = await extractDocxText(file);
+                } else {
+                    throw new Error('Formato non supportato');
+                }
+                
+                state.extractedTexts[file.name] = text;
+                statusEl.textContent = `✓ ${text.length} caratteri`;
+                statusEl.className = 'file-status success';
+            } catch (error) {
+                statusEl.textContent = `✗ ${error.message}`;
+                statusEl.className = 'file-status';
+            }
+        }
+        
+        async function extractPdfText(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = '';
+            
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                const pageText = content.items.map(item => item.str).join(' ');
+                fullText += pageText + '\n\n';
+            }
+            
+            return fullText;
+        }
+        
+        async function extractDocxText(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer });
+            return result.value;
+        }
+        
+        function removeFile(fileName) {
+            state.uploadedFiles = state.uploadedFiles.filter(f => f.name !== fileName);
+            delete state.extractedTexts[fileName];
+            document.getElementById(`file-${fileName}`).remove();
+            updateStartButton();
+        }
+        
+        function updateStartButton() {
+            const hasFiles = state.uploadedFiles.length > 0;
+            const allExtracted = state.uploadedFiles.every(f => state.extractedTexts[f.name]);
+            const btn = document.getElementById('startBtn');
+            btn.disabled = !hasFiles || !allExtracted;
+            
+            if (hasFiles && allExtracted) {
+                document.getElementById('uploadInfo').style.display = 'block';
+            }
+        }
+        
+        // Start SCA Creation
+        function startSCA() {
+            showSection('workSection');
+            initializeSectionList();
+            loadSection(0);
+        }
+        
+        function initializeSectionList() {
+            const list = document.getElementById('sectionList');
+            list.innerHTML = state.sections.map((section, index) => `
+                <li class="section-item ${index === 0 ? 'current' : ''}" id="section-item-${index}" onclick="jumpToSection(${index})">
+                    <span class="status-icon">⏸️</span>
+                    <span>${section.icon} ${section.name}</span>
+                </li>
+            `).join('');
+        }
+        
+        function loadSection(index) {
+            state.currentSectionIndex = index;
+            const section = state.sections[index];
+            
+            // Update sidebar
+            document.querySelectorAll('.section-item').forEach((item, i) => {
+                item.classList.remove('current');
+                if (i === index) item.classList.add('current');
+            });
+            
+            // Update header
+            document.getElementById('sectionTitle').textContent = `${section.icon} ${section.name}`;
+            document.getElementById('sectionType').textContent = getTypeLabel(section.type);
+            
+            // Update progress
+            const completed = state.sections.filter(s => s.completed).length;
+            const progress = (completed / state.sections.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${completed} di ${state.sections.length} sezioni completate (${Math.round(progress)}%)`;
+            
+            // Update prev/next buttons
+            document.getElementById('prevBtn').disabled = index === 0;
+            
+            // Load content based on type
+            const workspace = document.getElementById('workspaceContent');
+            
+            switch(section.type) {
+                case 'prompt':
+                    workspace.innerHTML = renderPromptSection(section);
+                    break;
+                case 'manual':
+                    workspace.innerHTML = renderManualSection(section);
+                    break;
+                case 'template':
+                    workspace.innerHTML = renderTemplateSection(section);
+                    break;
+                case 'guided':
+                    workspace.innerHTML = renderGuidedSection(section);
+                    break;
+                case 'structured':
+                    workspace.innerHTML = renderStructuredSection(section);
+                    break;
+                case 'info':
+                    workspace.innerHTML = renderInfoSection(section);
+                    break;
+                default:
+                    workspace.innerHTML = '<p>Tipo sezione non implementato</p>';
+            }
+        }
+        
+        function getTypeLabel(type) {
+            const labels = {
+                'prompt': '📋 Prompt Claude',
+                'manual': '✏️ Compilazione Manuale',
+                'template': '📄 Template',
+                'guided': '🎯 Guidata',
+                'structured': '📊 Strutturata',
+                'info': 'ℹ️ Informativa'
+            };
+            return labels[type] || type;
+        }
+        
+        // PROMPT SECTION (like MVP)
+        function renderPromptSection(section) {
+            const existing = state.scaData[section.id];
+            
+            if (existing) {
+                return `
+                    <div class="info-box">
+                        <strong>✅ Sezione completata</strong><br>
+                        Puoi modificarla o rigenerarla.
+                    </div>
+                    <div class="content-display" id="contentDisplay">${existing}</div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="confirmSection()">✓ Conferma e Avanti</button>
+                        <button class="btn btn-warning" onclick="editContent()">✏️ Modifica</button>
+                        <button class="btn btn-secondary" onclick="regenerate()">🔄 Rigenera</button>
+                    </div>
+                `;
+            }
+            
+            const context = buildDocumentsContext();
+            const fullPrompt = section.instruction + '\n\n=== DOCUMENTI CARICATI ===\n' + context;
+            
+            return `
+                <div class="warning-box">
+                    <strong>📋 MODALITÀ COPIA-INCOLLA</strong><br>
+                    1. Copia il prompt qui sotto<br>
+                    2. Vai su <a href="https://claude.ai" target="_blank">claude.ai</a><br>
+                    3. Incolla e invia<br>
+                    4. Copia la risposta di Claude e incollala sotto
+                </div>
+                
+                <div class="prompt-box">
+                    <div class="prompt-label">
+                        PROMPT DA COPIARE:
+                        <button class="btn btn-primary copy-btn btn-small" onclick="copyPrompt()">📋 Copia</button>
+                    </div>
+                    <div id="promptText">${fullPrompt}</div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <label class="form-label">
+                        INCOLLA QUI LA RISPOSTA DI CLAUDE:
+                    </label>
+                    <textarea class="form-textarea" id="responseInput" 
+                              placeholder="Incolla qui la risposta di Claude..." style="min-height: 250px;"></textarea>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="saveResponse()">💾 Salva e Avanti</button>
+                </div>
+            `;
+        }
+        
+        // MANUAL SECTION
+        function renderManualSection(section) {
+            const existing = state.scaData[section.id];
+            
+            let content = '';
+            let instructions = '';
+            
+            switch(section.id) {
+                case 'storico':
+                    instructions = 'Compila la tabella dello storico delle revisioni del documento.';
+                    content = `
+                        <div class="info-box">
+                            <strong>📅 Storico Revisioni</strong><br>
+                            ${instructions}
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 20%;">Revisione</th>
+                                    <th style="width: 25%;">Data Revisione</th>
+                                    <th style="width: 55%;">Modifica Apportata</th>
+                                </tr>
+                            </thead>
+                            <tbody id="revisionTable">
+                                <tr>
+                                    <td><input type="text" value="00" readonly></td>
+                                    <td><input type="date" id="rev00date"></td>
+                                    <td><input type="text" value="Nuova redazione" id="rev00mod"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" value="01"></td>
+                                    <td><input type="date" id="rev01date"></td>
+                                    <td><input type="text" placeholder="Descrizione modifica..." id="rev01mod"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" value="02"></td>
+                                    <td><input type="date" id="rev02date"></td>
+                                    <td><input type="text" placeholder="Descrizione modifica..." id="rev02mod"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="btn btn-secondary btn-small" onclick="addRevisionRow()">+ Aggiungi Revisione</button>
+                    `;
+                    break;
+                    
+                case 'documentazione':
+                    instructions = 'Elenca tutti i documenti ASST Lecco citati nel testo e pubblicati in Qweb.';
+                    content = `
+                        <div class="info-box">
+                            <strong>📎 Documentazione Collegata</strong><br>
+                            ${instructions}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Documenti collegati (uno per riga):</label>
+                            <textarea class="form-textarea" id="manualInput" 
+                                      placeholder="Es:&#10;- Procedura PRO-001 - Gestione farmaci in TIN&#10;- Istruzione operativa IO-025 - Monitoraggio parametri vitali&#10;- ..."
+                                      style="min-height: 200px;">${existing || ''}</textarea>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'contesto':
+                    instructions = 'Descrivi brevemente il contesto organizzativo attuale di ASST Lecco per questa patologia.';
+                    content = `
+                        <div class="info-box">
+                            <strong>🔍 Analisi di Contesto</strong><br>
+                            ${instructions}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Contesto organizzativo:</label>
+                            <textarea class="form-textarea" id="manualInput" 
+                                      placeholder="Descrivi il contesto locale di ASST Lecco:&#10;- Risorse disponibili&#10;- Volume casistica&#10;- Competenze specifiche&#10;- Criticità note&#10;- ..."
+                                      style="min-height: 250px;">${existing || ''}</textarea>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'percorso_attuale':
+                    instructions = 'Descrivi come viene attualmente gestita questa condizione presso ASST Lecco (AS-IS).';
+                    content = `
+                        <div class="info-box">
+                            <strong>🗺️ Percorso Attuale (AS-IS)</strong><br>
+                            ${instructions}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Descrizione percorso attuale:</label>
+                            <textarea class="form-textarea" id="manualInput" 
+                                      placeholder="Come viene gestita attualmente:&#10;- Punto di accesso (PS, ambulatorio, etc)&#10;- Iter diagnostico&#10;- Gestione terapeutica&#10;- Follow-up&#10;- Criticità rilevate&#10;- ..."
+                                      style="min-height: 300px;">${existing || ''}</textarea>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'fonti':
+                    instructions = 'Indica le linee guida utilizzate e il loro punteggio AGREE (se disponibile).';
+                    content = `
+                        <div class="info-box">
+                            <strong>📊 Analisi Fonti e Valutazione AGREE</strong><br>
+                            ${instructions}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Fonti e valutazione:</label>
+                            <textarea class="form-textarea" id="manualInput" 
+                                      placeholder="Es:&#10;&#10;LINEA GUIDA PRINCIPALE:&#10;- Titolo: [nome completo linea guida]&#10;- Autore/Organizzazione: [es. ESPGHAN, NASPGHAN]&#10;- Anno: [anno pubblicazione]&#10;- AGREE Score: [se valutata]&#10;&#10;FONTI AGGIUNTIVE:&#10;- [eventuali altre fonti]&#10;..."
+                                      style="min-height: 300px;">${existing || ''}</textarea>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            content += `
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="saveManualSection()">💾 Salva e Avanti</button>
+                </div>
+            `;
+            
+            return content;
+        }
+        
+        // TEMPLATE SECTION
+        function renderTemplateSection(section) {
+            const existing = state.scaData[section.id];
+            
+            const defaultText = `La responsabilità di mantenere sotto controllo l'attualità dei contenuti dello SCA è del responsabile scientifico, il quale ha la responsabilità di rivalutarne e validarne i contenuti con cadenza almeno triennale. Laddove non siano necessari aggiornamenti sostanziali, il documento deve comunque essere rieditato con nuova data e nuovo indice di revisione.`;
+            
+            return `
+                <div class="info-box">
+                    <strong>👤 Responsabilità di Aggiornamento</strong><br>
+                    Questo è un testo template standard ASST Lecco. Puoi modificarlo se necessario.
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Testo (modificabile):</label>
+                    <textarea class="form-textarea" id="templateInput" style="min-height: 150px;">${existing || defaultText}</textarea>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="saveTemplateSection()">💾 Salva e Avanti</button>
+                </div>
+            `;
+        }
+        
+        // GUIDED SECTION (Percorso Paziente)
+        function renderGuidedSection(section) {
+            const existing = state.scaData[section.id];
+            
+            if (existing) {
+                return `
+                    <div class="info-box">
+                        <strong>✅ Sezione completata</strong><br>
+                        Puoi modificarla o rigenerarla.
+                    </div>
+                    <div class="content-display" id="contentDisplay">${existing}</div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="confirmSection()">✓ Conferma e Avanti</button>
+                        <button class="btn btn-warning" onclick="editContent()">✏️ Modifica</button>
+                        <button class="btn btn-secondary" onclick="regenerate()">🔄 Rigenera</button>
+                    </div>
+                `;
+            }
+            
+            const context = buildDocumentsContext();
+            const prompt = `Sei un esperto nella creazione di Standard Clinici Assistenziali (SCA) per ASST Lecco.
+
+SEZIONE: 9.1 PERCORSO DEL PAZIENTE
+
+COMPITO:
+Descrivi dettagliatamente il percorso clinico-assistenziale del paziente, includendo:
+
+1. VALUTAZIONE INIZIALE:
+   - Anamnesi ed esame obiettivo
+   - Valutazioni diagnostiche necessarie
+   - Tempistiche (specificare se urgenti/differibili)
+   - Criteri di stratificazione rischio se applicabili
+
+2. TRATTAMENTO:
+   - Interventi terapeutici evidence-based
+   - Sequenza temporale interventi
+   - Criteri decisione terapeutica
+   - Monitoraggio efficacia
+
+3. MONITORAGGIO:
+   - Parametri da valutare
+   - Frequenza controlli
+   - Criteri rivalutazione
+   - Gestione complicanze
+
+4. FOLLOW-UP:
+   - Criteri dimissione
+   - Piano follow-up (ambulatoriale/territoriale)
+   - Educazione paziente/famiglia
+   - Continuità assistenziale
+
+REGOLE:
+- Per ogni snodo decisionale, indica la raccomandazione di riferimento
+- Specifica tempistiche quando rilevanti (es. diagnostica urgente)
+- Se manca evidenza, indica "decisione consenso gruppo lavoro"
+- Mantieni descrizione sintetica ma completa
+- Organizza in sequenza logico-temporale
+- NON usare markdown per titoli
+
+=== DOCUMENTI CARICATI ===
+${context}`;
+            
+            return `
+                <div class="warning-box">
+                    <strong>🏥 PERCORSO DEL PAZIENTE - Sezione Guidata</strong><br>
+                    Questa sezione richiede una descrizione strutturata del percorso clinico.
+                </div>
+                
+                <div class="prompt-box">
+                    <div class="prompt-label">
+                        PROMPT DA COPIARE:
+                        <button class="btn btn-primary copy-btn btn-small" onclick="copyPrompt()">📋 Copia</button>
+                    </div>
+                    <div id="promptText">${prompt}</div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <label class="form-label">
+                        INCOLLA QUI LA RISPOSTA DI CLAUDE:
+                    </label>
+                    <textarea class="form-textarea" id="responseInput" 
+                              placeholder="Incolla qui la risposta di Claude..." style="min-height: 300px;"></textarea>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="saveResponse()">💾 Salva e Avanti</button>
+                </div>
+            `;
+        }
+        
+        // STRUCTURED SECTION (Indicatori, RACI)
+        function renderStructuredSection(section) {
+            if (section.id === 'indicatori') {
+                return renderIndicatoriSection(section);
+            } else if (section.id === 'raci') {
+                return renderRACISection(section);
+            }
+        }
+        
+        function renderIndicatoriSection(section) {
+            const existing = state.scaData[section.id];
+            
+            if (existing) {
+                return `
+                    <div class="info-box">
+                        <strong>✅ Indicatori completati</strong><br>
+                        Hai definito ${JSON.parse(existing).length} indicatori.
+                    </div>
+                    <div class="content-display" id="contentDisplay">${formatIndicators(JSON.parse(existing))}</div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="confirmSection()">✓ Conferma e Avanti</button>
+                        <button class="btn btn-warning" onclick="editIndicators()">✏️ Modifica</button>
+                        <button class="btn btn-secondary" onclick="regenerate()">🔄 Rigenera</button>
+                    </div>
+                `;
+            }
+            
+            const context = buildDocumentsContext();
+            const prompt = `Sei un esperto nella creazione di Standard Clinici Assistenziali (SCA) per ASST Lecco.
+
+SEZIONE: 9.2 INDICATORI PER IL MONITORAGGIO
+
+COMPITO:
+Definisci 3-5 INDICATORI per monitorare qualità ed efficacia dello SCA.
+
+Per OGNI indicatore, specifica:
+
+1. NOME DELL'INDICATORE (breve e descrittivo)
+
+2. OBIETTIVO DESCRITTIVO (cosa misura)
+
+3. RAZIONALE (perché è importante)
+
+4. TIPO: processo o esito
+
+5. TIPO DI CALCOLO: percentuale, media, numero assoluto, etc.
+
+6. DIREZIONE MIGLIORAMENTO: aumento o riduzione valore
+
+7. STANDARD ATTESO (valore target obiettivo)
+
+8. STANDARD DI RIFERIMENTO (se esistono benchmark nazionali/internazionali)
+
+9. PERIODICITÀ RILEVAZIONE (mensile, trimestrale, annuale)
+
+10. RESPONSABILITÀ RILEVAZIONE (chi raccoglie i dati)
+
+11. RESPONSABILITÀ ELABORAZIONE (chi analizza)
+
+12. NUMERATORE (cosa si conta, con criteri inclusione/esclusione)
+
+13. FONTE DATI NUMERATORE (da dove vengono i dati)
+
+14. DENOMINATORE (popolazione riferimento, con criteri)
+
+15. FONTE DATI DENOMINATORE
+
+FORMATO OUTPUT:
+Per ogni indicatore, presenta tutte le 15 informazioni in modo strutturato e completo.
+
+REGOLE:
+- Scegli indicatori SMART (Specifici, Misurabili, Achievable, Rilevanti, Temporizzati)
+- Preferisci misure già validate dalla letteratura
+- Assicurati che siano realmente misurabili con dati disponibili
+- Almeno 1 indicatore di processo e 1 di esito
+
+=== DOCUMENTI CARICATI ===
+${context}`;
+            
+            return `
+                <div class="warning-box">
+                    <strong>📈 INDICATORI DI MONITORAGGIO - Sezione Strutturata</strong><br>
+                    Definisci 3-5 indicatori SMART per monitorare lo SCA.
+                </div>
+                
+                <div class="info-box">
+                    <strong>📊 Caratteristiche Indicatori</strong><br>
+                    Gli indicatori devono essere: Specifici, Misurabili, Achievable, Rilevanti, Temporizzati (SMART).
+                    Include almeno un indicatore di processo e uno di esito.
+                </div>
+                
+                <div class="prompt-box">
+                    <div class="prompt-label">
+                        PROMPT DA COPIARE:
+                        <button class="btn btn-primary copy-btn btn-small" onclick="copyPrompt()">📋 Copia</button>
+                    </div>
+                    <div id="promptText">${prompt}</div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <label class="form-label">
+                        INCOLLA QUI LA RISPOSTA DI CLAUDE:
+                    </label>
+                    <textarea class="form-textarea" id="responseInput" 
+                              placeholder="Incolla qui la risposta completa di Claude con tutti gli indicatori..." style="min-height: 350px;"></textarea>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="saveIndicators()">💾 Salva Indicatori e Avanti</button>
+                </div>
+            `;
+        }
+        
+        function renderRACISection(section) {
+            const existing = state.scaData[section.id];
+            
+            if (existing) {
+                return `
+                    <div class="info-box">
+                        <strong>✅ Matrice RACI completata</strong>
+                    </div>
+                    <div class="content-display" id="contentDisplay">${existing}</div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="confirmSection()">✓ Conferma e Avanti</button>
+                        <button class="btn btn-warning" onclick="editContent()">✏️ Modifica</button>
+                        <button class="btn btn-secondary" onclick="regenerate()">🔄 Rigenera</button>
+                    </div>
+                `;
+            }
+            
+            const context = buildDocumentsContext();
+            const prompt = `Sei un esperto nella creazione di Standard Clinici Assistenziali (SCA) per ASST Lecco.
+
+SEZIONE: 10. MATRICE RACI
+
+COMPITO:
+Crea una MATRICE RACI che definisca responsabilità per le principali attività del percorso.
+
+LEGENDA RACI:
+- R (Responsible): Chi esegue l'attività
+- A (Accountable): Chi ha responsabilità finale (UNO SOLO per attività)
+- C (Consulted): Chi va consultato
+- I (Informed): Chi va informato
+
+STRUTTURA:
+1. Identifica 8-12 ATTIVITÀ CHIAVE del percorso (colonna sinistra):
+   - Accoglienza/Triage
+   - Valutazione iniziale
+   - Prescrizione esami
+   - Esecuzione diagnostica
+   - Valutazione risultati
+   - Decisione terapeutica
+   - Somministrazione terapia
+   - Monitoraggio clinico
+   - Rivalutazione
+   - Counseling famiglia
+   - Decisione dimissione
+   - Programmazione follow-up
+
+2. Identifica RUOLI coinvolti (header colonne):
+   - Medico Reparto
+   - Coordinatore Infermieristico
+   - Infermiere
+   - OSS
+   - Pediatra Famiglia / MMG
+   - [Altri ruoli specifici]
+
+3. Per ogni cella, assegna:
+   - R, A, C, I o lascia vuota
+
+FORMATO OUTPUT:
+Presenta come TABELLA formattata chiaramente.
+
+REGOLE:
+- OGNI attività deve avere UN SOLO Accountable (A)
+- OGNI attività deve avere almeno un Responsible (R)
+- Sii realistico sui ruoli ASST Lecco
+- Considera competenze e mansioni
+
+=== DOCUMENTI CARICATI ===
+${context}`;
+            
+            return `
+                <div class="warning-box">
+                    <strong>👥 MATRICE RACI - Responsabilità</strong><br>
+                    Definisci chi fa cosa nel percorso assistenziale.
+                </div>
+                
+                <div class="info-box">
+                    <strong>📋 Regole RACI</strong><br>
+                    <strong>R</strong> = Responsible (esegue) | 
+                    <strong>A</strong> = Accountable (responsabile finale, UNO SOLO) |
+                    <strong>C</strong> = Consulted (consultato) |
+                    <strong>I</strong> = Informed (informato)
+                </div>
+                
+                <div class="prompt-box">
+                    <div class="prompt-label">
+                        PROMPT DA COPIARE:
+                        <button class="btn btn-primary copy-btn btn-small" onclick="copyPrompt()">📋 Copia</button>
+                    </div>
+                    <div id="promptText">${prompt}</div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <label class="form-label">
+                        INCOLLA QUI LA RISPOSTA DI CLAUDE (tabella RACI):
+                    </label>
+                    <textarea class="form-textarea" id="responseInput" 
+                              placeholder="Incolla qui la tabella RACI generata da Claude..." style="min-height: 350px;"></textarea>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="saveResponse()">💾 Salva RACI e Avanti</button>
+                </div>
+            `;
+        }
+        
+        // INFO SECTION
+        function renderInfoSection(section) {
+            return `
+                <div class="info-box">
+                    <strong>📊 FLOWCHART</strong><br>
+                    Il diagramma di flusso (flowchart) del percorso viene definito dal gruppo di lavoro e disegnato dallo Specialista Qualità di riferimento in collaborazione con il Responsabile Scientifico.
+                </div>
+                
+                <div class="warning-box">
+                    <strong>⚠️ NOTA IMPORTANTE</strong><br>
+                    Il flowchart va prodotto PRIMA della redazione finale del documento, per:
+                    <ul style="margin: 10px 0 0 20px;">
+                        <li>Chiarire l'ordine cronologico delle fasi</li>
+                        <li>Rendere evidenti gli snodi decisionali</li>
+                        <li>Visualizzare il flusso del percorso</li>
+                    </ul>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Note sul flowchart (opzionale):</label>
+                    <textarea class="form-textarea" id="flowchartNotes" 
+                              placeholder="Es: Flowchart da completare con Specialista Qualità entro [data]..."
+                              style="min-height: 100px;">${state.scaData[section.id] || ''}</textarea>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="saveFlowchartNotes()">✓ Salva Note e Avanti</button>
+                    <button class="btn btn-primary" onclick="skipFlowchart()">⏭️ Salta (da completare dopo)</button>
+                </div>
+            `;
+        }
+        
+        // SAVE FUNCTIONS
+        function copyPrompt() {
+            const promptText = document.getElementById('promptText').textContent;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copiato!';
+                btn.style.background = '#28a745';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                }, 2000);
+            });
+        }
+        
+        function saveResponse() {
+            const response = document.getElementById('responseInput').value.trim();
+            
+            if (!response) {
+                alert('⚠️ Incolla prima la risposta di Claude!');
+                return;
+            }
+            
+            const section = state.sections[state.currentSectionIndex];
+            state.scaData[section.id] = response;
+            section.completed = true;
+            
+            updateSectionStatus();
+            nextSection();
+        }
+        
+        function saveManualSection() {
+            const section = state.sections[state.currentSectionIndex];
+            
+            if (section.id === 'storico') {
+                // Save revision table
+                const rows = document.querySelectorAll('#revisionTable tr');
+                let tableData = 'STORICO DELLE REVISIONI\n\n';
+                tableData += 'Revisione | Data | Modifica\n';
+                tableData += '----------|------|----------\n';
+                
+                rows.forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    const rev = inputs[0].value;
+                    const date = inputs[1].value || '[da definire]';
+                    const mod = inputs[2].value || '';
+                    if (rev && mod) {
+                        tableData += `${rev} | ${date} | ${mod}\n`;
+                    }
+                });
+                
+                state.scaData[section.id] = tableData;
+            } else {
+                const input = document.getElementById('manualInput').value.trim();
+                
+                if (!input) {
+                    alert('⚠️ Compila il campo prima di salvare!');
+                    return;
+                }
+                
+                state.scaData[section.id] = input;
+            }
+            
+            section.completed = true;
+            updateSectionStatus();
+            nextSection();
+        }
+        
+        function saveTemplateSection() {
+            const input = document.getElementById('templateInput').value.trim();
+            
+            if (!input) {
+                alert('⚠️ Il testo non può essere vuoto!');
+                return;
+            }
+            
+            const section = state.sections[state.currentSectionIndex];
+            state.scaData[section.id] = input;
+            section.completed = true;
+            
+            updateSectionStatus();
+            nextSection();
+        }
+        
+        function saveIndicators() {
+            const response = document.getElementById('responseInput').value.trim();
+            
+            if (!response) {
+                alert('⚠️ Incolla prima la risposta di Claude con gli indicatori!');
+                return;
+            }
+            
+            // Store as structured data
+            const section = state.sections[state.currentSectionIndex];
+            state.scaData[section.id] = JSON.stringify([{text: response}]); // Simplified storage
+            section.completed = true;
+            
+            updateSectionStatus();
+            nextSection();
+        }
+        
+        function saveFlowchartNotes() {
+            const notes = document.getElementById('flowchartNotes').value.trim();
+            const section = state.sections[state.currentSectionIndex];
+            state.scaData[section.id] = notes || 'Flowchart da completare con Specialista Qualità.';
+            section.completed = true;
+            
+            updateSectionStatus();
+            nextSection();
+        }
+        
+        function skipFlowchart() {
+            const section = state.sections[state.currentSectionIndex];
+            state.scaData[section.id] = '[Flowchart da completare]';
+            section.completed = true;
+            
+            updateSectionStatus();
+            nextSection();
+        }
+        
+        function addRevisionRow() {
+            const table = document.getElementById('revisionTable');
+            const rowCount = table.rows.length;
+            const newRow = table.insertRow();
+            
+            newRow.innerHTML = `
+                <td><input type="text" value="${String(rowCount).padStart(2, '0')}"></td>
+                <td><input type="date"></td>
+                <td><input type="text" placeholder="Descrizione modifica..."></td>
+            `;
+        }
+        
+        function formatIndicators(indicators) {
+            return indicators.map((ind, i) => 
+                `<strong>INDICATORE ${i + 1}</strong>\n\n${ind.text}\n\n`
+            ).join('---\n\n');
+        }
+        
+        function editIndicators() {
+            const section = state.sections[state.currentSectionIndex];
+            delete state.scaData[section.id];
+            section.completed = false;
+            loadSection(state.currentSectionIndex);
+        }
+        
+        function updateSectionStatus() {
+            const item = document.getElementById(`section-item-${state.currentSectionIndex}`);
+            item.classList.add('completed');
+            item.querySelector('.status-icon').textContent = '✅';
+        }
+        
+        function regenerate() {
+            if (confirm('Rigenerare la sezione? Il contenuto attuale sarà perso.')) {
+                const section = state.sections[state.currentSectionIndex];
+                delete state.scaData[section.id];
+                section.completed = false;
+                loadSection(state.currentSectionIndex);
+            }
+        }
+        
+        function editContent() {
+            const display = document.getElementById('contentDisplay');
+            display.contentEditable = true;
+            display.focus();
+            display.style.borderColor = '#FFC107';
+            display.style.background = '#FFFEF5';
+            
+            const btn = event.target;
+            btn.textContent = '💾 Salva';
+            btn.className = 'btn btn-success';
+            btn.onclick = saveEdit;
+        }
+        
+        function saveEdit() {
+            const display = document.getElementById('contentDisplay');
+            display.contentEditable = false;
+            display.style.borderColor = '#004ACC';
+            display.style.background = '#FAF6F0';
+            
+            const section = state.sections[state.currentSectionIndex];
+            state.scaData[section.id] = display.textContent;
+            
+            const btn = event.target;
+            btn.textContent = '✏️ Modifica';
+            btn.className = 'btn btn-warning';
+            btn.onclick = editContent;
+        }
+        
+        function confirmSection() {
+            const section = state.sections[state.currentSectionIndex];
+            section.completed = true;
+            updateSectionStatus();
+            nextSection();
+        }
+        
+        // NAVIGATION
+        function nextSection() {
+            if (state.currentSectionIndex < state.sections.length - 1) {
+                loadSection(state.currentSectionIndex + 1);
+            } else {
+                goToReview();
+            }
+        }
+        
+        function previousSection() {
+            if (state.currentSectionIndex > 0) {
+                loadSection(state.currentSectionIndex - 1);
+            }
+        }
+        
+        function jumpToSection(index) {
+            loadSection(index);
+        }
+        
+        function goToReview() {
+            showSection('reviewSection');
+            renderReview();
+        }
+        
+        function renderReview() {
+            const container = document.getElementById('reviewContent');
+            let html = '<div style="max-width: 100%;">';
+            
+            state.sections.forEach(section => {
+                const content = state.scaData[section.id];
+                const displayContent = content ? 
+                    (section.id === 'indicatori' ? formatIndicators(JSON.parse(content)) : content) :
+                    '<em style="color: #999;">Non completata</em>';
+                    
+                html += `
+                    <div class="content-display" style="margin-bottom: 30px;">
+                        <h3 style="color: #003899; margin-bottom: 15px;">${section.icon} ${section.name}</h3>
+                        <div style="white-space: pre-wrap; line-height: 1.8;">
+                            ${displayContent}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function backToWork() {
+            showSection('workSection');
+        }
+        
+        function exportSCA() {
+            let fullText = '═══════════════════════════════════════════════════\n';
+            fullText += 'STANDARD CLINICO ASSISTENZIALE - ASST LECCO\n';
+            fullText += '═══════════════════════════════════════════════════\n\n';
+            
+            state.sections.forEach(section => {
+                const content = state.scaData[section.id];
+                if (content) {
+                    fullText += `\n${section.name}\n`;
+                    fullText += '─'.repeat(section.name.length) + '\n\n';
+                    
+                    if (section.id === 'indicatori') {
+                        fullText += formatIndicators(JSON.parse(content));
+                    } else {
+                        fullText += content;
+                    }
+                    
+                    fullText += '\n\n';
+                }
+            });
+            
+            fullText += '\n═══════════════════════════════════════════════════\n';
+            fullText += `Generato il: ${new Date().toLocaleDateString('it-IT')}\n`;
+            fullText += '═══════════════════════════════════════════════════\n';
+            
+            navigator.clipboard.writeText(fullText).then(() => {
+                alert('✅ SCA COMPLETO copiato negli appunti!\n\n' +
+                      'Puoi ora incollarlo in Word o altro documento.\n\n' +
+                      `Sezioni completate: ${state.sections.filter(s => s.completed).length}/15`);
+            });
+        }
+        
+        function buildDocumentsContext() {
+            let context = '';
+            for (const [fileName, text] of Object.entries(state.extractedTexts)) {
+                const truncated = text.length > 8000 ? text.substring(0, 8000) + '\n[...troncato...]' : text;
+                context += `\n--- ${fileName} ---\n${truncated}\n\n`;
+            }
+            return context;
+        }
+        
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
